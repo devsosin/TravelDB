@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * FROM tb_country",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "lat",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 3,
+        "name": "lng",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 4,
+        "name": "continent_id",
+        "type_info": "Int2"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "48c1486237fa1ef0686db10c854e960315ff0dd8f13d5daffec65967104889c7"
+}
