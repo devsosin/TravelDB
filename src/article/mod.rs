@@ -45,12 +45,12 @@ impl ArticleRepository for ArticleRepositoryImpl {
                     RETURNING id AS keyword_id
             ),
             ArticleDatas AS (
-                SELECT article_id, title, link, writer, writed_at
-                FROM UNNEST($3::text[], $4::text[], $5::text[], $6::text[], $7::timestamptz[])
-                    AS u(article_id, title, link, writer, writed_at)
+                SELECT article_id, title, description, link, writer, writed_at
+                FROM UNNEST($3::text[], $4::text[], $5::text[], $6::text[], $7::text[], $8::timestamptz[])
+                    AS u(article_id, title, description, link, writer, writed_at)
             )
-            INSERT INTO tb_article(platform_id, keyword_id, article_id, title, link, writer, writed_at)
-                SELECT platform_id, keyword_id, article_id, title, link, writer, writed_at
+            INSERT INTO tb_article(platform_id, keyword_id, article_id, title, description, link, writer, writed_at)
+                SELECT platform_id, keyword_id, article_id, title, description, link, writer, writed_at
                 FROM ArticleDatas
                     CROSS JOIN TargetPlatform
                     CROSS JOIN TargetKeyword
@@ -60,6 +60,7 @@ impl ArticleRepository for ArticleRepositoryImpl {
             new_article_list.get_keyword(),
             &new_article_list.get_article_ids(),
             &new_article_list.get_titles(),
+            &new_article_list.get_descriptions(),
             &new_article_list.get_links(),
             &new_article_list.get_writers(),
             &new_article_list.get_writed_ats(),

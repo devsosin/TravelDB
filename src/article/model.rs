@@ -28,6 +28,12 @@ impl NewArticleList {
     pub fn get_titles(&self) -> Vec<String> {
         self.articles.iter().map(|a| a.title.clone()).collect()
     }
+    pub fn get_descriptions(&self) -> Vec<String> {
+        self.articles
+            .iter()
+            .map(|a| a.description.clone())
+            .collect()
+    }
     pub fn get_links(&self) -> Vec<String> {
         self.articles.iter().map(|a| a.link.clone()).collect()
     }
@@ -42,6 +48,7 @@ impl NewArticleList {
 pub struct NewArticle {
     article_id: String,
     title: String,
+    description: String,
     link: String,
     writer: String,
     writed_at: DateTime<Utc>,
@@ -51,6 +58,7 @@ impl NewArticle {
     pub fn new(
         article_id: &str,
         title: &str,
+        description: &str,
         link: &str,
         writer: &str,
         writed_at: DateTime<Utc>,
@@ -58,6 +66,7 @@ impl NewArticle {
         Self {
             article_id: article_id.into(),
             title: title.into(),
+            description: description.into(),
             link: link.into(),
             writer: writer.into(),
             writed_at,

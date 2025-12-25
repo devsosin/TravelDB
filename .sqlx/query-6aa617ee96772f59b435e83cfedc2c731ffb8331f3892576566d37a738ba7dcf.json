@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            WITH TargetPlatform AS (\n                SELECT id AS platform_id FROM tb_platform WHERE name = $1\n            ),\n            TargetKeyword AS (\n                INSERT INTO tb_keyword(query) \n                    VALUES ($2) \n                    ON CONFLICT (query) DO NOTHING \n                    RETURNING id AS keyword_id\n            ),\n            ArticleDatas AS (\n                SELECT article_id, title, link, writer, writed_at\n                FROM UNNEST($3::text[], $4::text[], $5::text[], $6::text[], $7::timestamptz[])\n                    AS u(article_id, title, link, writer, writed_at)\n            )\n            INSERT INTO tb_article(platform_id, keyword_id, article_id, title, link, writer, writed_at)\n                SELECT platform_id, keyword_id, article_id, title, link, writer, writed_at\n                FROM ArticleDatas\n                    CROSS JOIN TargetPlatform\n                    CROSS JOIN TargetKeyword\n                RETURNING id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Varchar",
+        "TextArray",
+        "TextArray",
+        "TextArray",
+        "TextArray",
+        "TimestamptzArray"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "6aa617ee96772f59b435e83cfedc2c731ffb8331f3892576566d37a738ba7dcf"
+}
