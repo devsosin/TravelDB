@@ -8,6 +8,9 @@ pub mod country;
 pub mod keyword;
 pub mod platform;
 
+// utils
+pub mod crawl;
+
 use crate::errors::RepositoryError;
 
 pub type RepositoryResult<T> = Result<T, RepositoryError>;

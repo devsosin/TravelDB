@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE tb_crawl_checker SET crawled_at = NOW()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "04b4edd76df084865ac40cc77660ea509b8988175c4cc37ff6c32b78c1ea9eb0"
+}
