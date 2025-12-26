@@ -39,10 +39,9 @@ impl ArticleRepository for ArticleRepositoryImpl {
                 SELECT id AS platform_id FROM tb_platform WHERE name = $1
             ),
             TargetKeyword AS (
-                INSERT INTO tb_keyword(query) 
-                    VALUES ($2) 
-                    ON CONFLICT (query) DO NOTHING 
-                    RETURNING id AS keyword_id
+                SELECT id AS keyword_id
+                FROM tb_keyword
+                WHERE query = $2
             ),
             ArticleDatas AS (
                 SELECT article_id, title, description, link, writer, writed_at
