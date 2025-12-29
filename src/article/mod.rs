@@ -8,7 +8,7 @@ use crate::{
     RepositoryResult,
     article::{
         model::{NewArticleDetail, NewArticleList, NewArticleRelavance},
-        record::{ArticleLinkRecord, ArticleSummaryRecord},
+        record::{ArticleInfoRecord, ArticleSummaryRecord},
     },
 };
 
@@ -36,7 +36,7 @@ pub trait ArticleRepository: Send {
     -> impl Future<Output = RepositoryResult<Vec<ArticleSummaryRecord>>>;
     fn find_related_but_no_detail(
         &self,
-    ) -> impl Future<Output = RepositoryResult<Vec<ArticleLinkRecord>>>;
+    ) -> impl Future<Output = RepositoryResult<Vec<ArticleInfoRecord>>>;
     fn save_relavance(
         &self,
         new_article_relavance: NewArticleRelavance,
@@ -129,16 +129,24 @@ impl ArticleRepository for ArticleRepositoryImpl {
         Ok(articles)
     }
 
-    async fn find_related_but_no_detail(&self) -> RepositoryResult<Vec<ArticleLinkRecord>> {
+    async fn find_related_but_no_detail(&self) -> RepositoryResult<Vec<ArticleInfoRecord>> {
         let articles = sqlx::query_as!(
-            ArticleLinkRecord,
+            ArticleInfoRecord,
             r#"
-            SELECT a.id, link
-            FROM tb_article AS a
+            WITH TargetArticles AS (
+                SELECT id, article_id, writer, writed_at
+                FROM tb_article
+                WHERE writed_at >= (SELECT writed_at FROM tb_crawl_detail_checker)
+                ORDER BY writed_at ASC
+                LIMIT 40
+            )
+            SELECT MIN(a.id) AS id, a.article_id, MIN(writer) AS writer, MIN(writed_at) AS writed_at
+            FROM TargetArticles AS a
                 JOIN tb_article_relavance AS r ON a.id = r.article_id AND r.is_related = TRUE
                 LEFT JOIN tb_article_detail AS d ON a.id = d.article_id
-            WHERE d.id IS NULL
-            ORDER BY writed_at ASC
+            GROUP BY a.article_id
+            HAVING count(d.id) = 0
+            ORDER BY MIN(a.writed_at) ASC
             LIMIT 20
             "#
         )

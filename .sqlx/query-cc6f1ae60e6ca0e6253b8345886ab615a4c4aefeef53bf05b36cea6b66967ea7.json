@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE tb_crawl_detail_checker SET writed_at = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cc6f1ae60e6ca0e6253b8345886ab615a4c4aefeef53bf05b36cea6b66967ea7"
+}

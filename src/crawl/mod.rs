@@ -29,4 +29,15 @@ impl CrawlCheckRepositoryImpl {
 
         Ok(crawl_checker.crawled_at)
     }
+
+    pub async fn update_detail(&self, writed_at: DateTime<Utc>) -> RepositoryResult<()> {
+        sqlx::query!(
+            "UPDATE tb_crawl_detail_checker SET writed_at = $1",
+            writed_at
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
 }
