@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT a.id, link\n            FROM tb_article AS a\n                JOIN tb_article_relavance AS r ON a.id = r.article_id AND r.is_related = TRUE\n                LEFT JOIN tb_article_detail AS d ON a.id = d.article_id\n            WHERE d.id IS NULL\n            ORDER BY writed_at ASC\n            LIMIT 20\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "link",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "5c043b9c4e264d71f6bd84c457a01b3764be78fd9ed4809613e406da1eed7348"
+}

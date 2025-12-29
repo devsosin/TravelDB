@@ -9,6 +9,7 @@ pub mod keyword;
 pub mod platform;
 
 // utils
+pub mod agent;
 pub mod crawl;
 
 use crate::errors::RepositoryError;

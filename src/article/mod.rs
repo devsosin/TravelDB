@@ -1,11 +1,15 @@
 pub mod entity;
 pub mod model;
+pub mod record;
 
 use sqlx::PgPool;
 
 use crate::{
     RepositoryResult,
-    article::model::{NewArticleDetail, NewArticleList},
+    article::{
+        model::{NewArticleDetail, NewArticleList, NewArticleRelavance},
+        record::{ArticleLinkRecord, ArticleSummaryRecord},
+    },
 };
 
 pub struct ArticleRepositoryImpl {
@@ -28,7 +32,15 @@ pub trait ArticleRepository: Send {
         new_article_detail: NewArticleDetail,
     ) -> impl Future<Output = RepositoryResult<i64>>;
 
-    // find_no_details
+    fn find_no_relavnce(&self)
+    -> impl Future<Output = RepositoryResult<Vec<ArticleSummaryRecord>>>;
+    fn find_related_but_no_detail(
+        &self,
+    ) -> impl Future<Output = RepositoryResult<Vec<ArticleLinkRecord>>>;
+    fn save_relavance(
+        &self,
+        new_article_relavance: NewArticleRelavance,
+    ) -> impl Future<Output = RepositoryResult<i64>>;
 }
 
 impl ArticleRepository for ArticleRepositoryImpl {
@@ -82,5 +94,57 @@ impl ArticleRepository for ArticleRepositoryImpl {
         .await?;
 
         Ok(record.id)
+    }
+
+    async fn save_relavance(
+        &self,
+        new_article_relavance: NewArticleRelavance,
+    ) -> RepositoryResult<i64> {
+        let record = sqlx::query!(
+            "INSERT INTO tb_article_relavance(article_id, is_related) VALUES($1, $2) RETURNING id",
+            new_article_relavance.get_article_id(),
+            new_article_relavance.get_is_related()
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(record.id)
+    }
+
+    async fn find_no_relavnce(&self) -> RepositoryResult<Vec<ArticleSummaryRecord>> {
+        let articles = sqlx::query_as!(
+            ArticleSummaryRecord,
+            r#"
+            SELECT a.id, title, description 
+            FROM tb_article AS a
+                LEFT JOIN tb_article_relavance AS r ON a.id = r.article_id
+            WHERE r.id IS NULL
+            ORDER BY writed_at ASC
+            LIMIT 20
+            "#
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(articles)
+    }
+
+    async fn find_related_but_no_detail(&self) -> RepositoryResult<Vec<ArticleLinkRecord>> {
+        let articles = sqlx::query_as!(
+            ArticleLinkRecord,
+            r#"
+            SELECT a.id, link
+            FROM tb_article AS a
+                JOIN tb_article_relavance AS r ON a.id = r.article_id AND r.is_related = TRUE
+                LEFT JOIN tb_article_detail AS d ON a.id = d.article_id
+            WHERE d.id IS NULL
+            ORDER BY writed_at ASC
+            LIMIT 20
+            "#
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(articles)
     }
 }

@@ -94,3 +94,24 @@ impl NewArticleDetail {
         &self.content
     }
 }
+
+pub struct NewArticleRelavance {
+    article_id: i64,
+    is_related: bool,
+}
+
+impl NewArticleRelavance {
+    pub fn new(article_id: i64, is_related: bool) -> Self {
+        Self {
+            article_id,
+            is_related,
+        }
+    }
+
+    pub fn get_article_id(&self) -> i64 {
+        self.article_id
+    }
+    pub fn get_is_related(&self) -> bool {
+        self.is_related
+    }
+}
