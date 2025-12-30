@@ -6,6 +6,7 @@ pub mod article;
 pub mod city;
 pub mod country;
 pub mod keyword;
+pub mod metadata;
 pub mod platform;
 
 // utils

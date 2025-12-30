@@ -5,5 +5,4 @@ pub struct Country {
     pub name: String,
     pub lat: BigDecimal,
     pub lng: BigDecimal,
-    pub continent_id: Option<i16>,
 }

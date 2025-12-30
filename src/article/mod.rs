@@ -8,7 +8,7 @@ use crate::{
     RepositoryResult,
     article::{
         model::{NewArticleDetail, NewArticleList, NewArticleRelavance},
-        record::{ArticleInfoRecord, ArticleSummaryRecord},
+        record::{ArticleDetailRecord, ArticleInfoRecord, ArticleSummaryRecord},
     },
 };
 
@@ -41,6 +41,9 @@ pub trait ArticleRepository: Send {
         &self,
         new_article_relavance: NewArticleRelavance,
     ) -> impl Future<Output = RepositoryResult<i64>>;
+    fn find_detail_with_no_metadata(
+        &self,
+    ) -> impl Future<Output = RepositoryResult<Vec<ArticleDetailRecord>>>;
 }
 
 impl ArticleRepository for ArticleRepositoryImpl {
@@ -148,6 +151,27 @@ impl ArticleRepository for ArticleRepositoryImpl {
             HAVING count(d.id) = 0
             ORDER BY MIN(a.writed_at) ASC
             LIMIT 20
+            "#
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(articles)
+    }
+
+    async fn find_detail_with_no_metadata(&self) -> RepositoryResult<Vec<ArticleDetailRecord>> {
+        let articles = sqlx::query_as!(
+            ArticleDetailRecord,
+            r#"
+            SELECT a.id, a.title, d.content
+            FROM (
+                SELECT d.article_id, d.content
+                FROM tb_article_detail AS d
+                    LEFT JOIN tb_metadata AS m ON d.article_id = m.article_id
+                WHERE m.id IS NULL
+                LIMIT 20
+            ) AS d
+                JOIN tb_article AS a ON a.id = d.article_id
             "#
         )
         .fetch_all(&self.pool)

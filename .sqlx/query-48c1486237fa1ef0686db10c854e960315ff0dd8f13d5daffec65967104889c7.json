@@ -22,11 +22,6 @@
         "ordinal": 3,
         "name": "lng",
         "type_info": "Numeric"
-      },
-      {
-        "ordinal": 4,
-        "name": "continent_id",
-        "type_info": "Int2"
       }
     ],
     "parameters": {
@@ -36,8 +31,7 @@
       false,
       false,
       false,
-      false,
-      true
+      false
     ]
   },
   "hash": "48c1486237fa1ef0686db10c854e960315ff0dd8f13d5daffec65967104889c7"

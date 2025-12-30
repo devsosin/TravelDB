@@ -12,3 +12,9 @@ pub struct ArticleInfoRecord {
     pub writer: Option<String>,
     pub writed_at: Option<DateTime<Utc>>,
 }
+
+pub struct ArticleDetailRecord {
+    pub id: i64,
+    pub title: Option<String>,
+    pub content: Option<String>,
+}
