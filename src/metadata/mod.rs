@@ -34,27 +34,15 @@ impl MetaRepository for MetaRepositoryImpl {
     ) -> RepositoryResult<i64> {
         let record = sqlx::query!(
             r#"
-            WITH SelectedCountry AS (
-                SELECT id
-                FROM tb_country
-                WHERE name = $4
-            ),
-            SelectedCity AS (
-                SELECT id
-                FROM tb_city
-                WHERE name = $5
-            )
             INSERT INTO tb_metadata(article_id, title, continent, country_id, city_id, 
                     post_type, companion, duration, budget_level, best_season, has_budget, keywords) 
-                VALUES ($1, $2, $3, (SELECT id FROM SelectedCountry), (SELECT id FROM SelectedCity), 
-                    $6, $7, $8, $9, $10, $11, $12) 
+                SELECT article_id, $2, continent, country_id, city_id, $3, $4, $5, $6, $7, $8, $9 
+                FROM tb_article_relavance
+                WHERE article_id = $1
             RETURNING id
             "#,
             article_id,
             title,
-            new_metadata.continent,
-            new_metadata.country,
-            new_metadata.city,
             &new_metadata.post_type,
             new_metadata.companion,
             new_metadata.duration,

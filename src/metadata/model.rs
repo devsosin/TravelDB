@@ -1,8 +1,4 @@
 pub struct NewMetadata {
-    pub continent: Option<String>,
-    pub country: Option<String>,
-    pub city: Option<String>,
-
     pub post_type: String,
     pub companion: Option<String>,
     pub duration: Option<String>,
@@ -15,10 +11,6 @@ pub struct NewMetadata {
 
 impl NewMetadata {
     pub fn new(
-        continent: Option<String>,
-        country: Option<String>,
-        city: Option<String>,
-
         post_type: &str,
         companion: Option<String>,
         duration: Option<String>,
@@ -29,9 +21,6 @@ impl NewMetadata {
         keywords: Vec<String>,
     ) -> Self {
         Self {
-            continent,
-            country,
-            city,
             post_type: post_type.into(),
             companion,
             duration,

@@ -104,9 +104,28 @@ impl ArticleRepository for ArticleRepositoryImpl {
         new_article_relavance: NewArticleRelavance,
     ) -> RepositoryResult<i64> {
         let record = sqlx::query!(
-            "INSERT INTO tb_article_relavance(article_id, is_related) VALUES($1, $2) RETURNING id",
+            r#"
+            WITH SelectedCountry AS (
+                SELECT id
+                FROM tb_country
+                WHERE name = $4
+            ),
+            SelectedCity AS (
+                SELECT id
+                FROM tb_city
+                WHERE name = $5
+            )
+            INSERT INTO tb_article_relavance (article_id, is_related, continent, country_id, city_id) 
+                VALUES ($1, $2, $3, (SELECT id FROM SelectedCountry), (SELECT id FROM SelectedCity))
+            RETURNING id
+            "#,
             new_article_relavance.get_article_id(),
-            new_article_relavance.get_is_related()
+            new_article_relavance.get_is_related(),
+            new_article_relavance.get_continent() as _,
+            new_article_relavance.get_country() as _,
+            new_article_relavance.get_city() as _,
+
+
         )
         .fetch_one(&self.pool)
         .await?;

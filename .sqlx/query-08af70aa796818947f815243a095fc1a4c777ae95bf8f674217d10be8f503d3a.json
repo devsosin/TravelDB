@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            WITH SelectedCountry AS (\n                SELECT id\n                FROM tb_country\n                WHERE name = $4\n            ),\n            SelectedCity AS (\n                SELECT id\n                FROM tb_city\n                WHERE name = $5\n            )\n            INSERT INTO tb_article_relavance (article_id, is_related, continent, country_id, city_id) \n                VALUES ($1, $2, $3, (SELECT id FROM SelectedCountry), (SELECT id FROM SelectedCity))\n            RETURNING id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Bool",
+        "Varchar",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "08af70aa796818947f815243a095fc1a4c777ae95bf8f674217d10be8f503d3a"
+}

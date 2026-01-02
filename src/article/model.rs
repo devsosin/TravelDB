@@ -77,13 +77,19 @@ impl NewArticle {
 pub struct NewArticleDetail {
     article_id: i64,
     content: String,
+    hashtags: String,
+    likes: i32,
+    comments: i32,
 }
 
 impl NewArticleDetail {
-    pub fn new(article_id: i64, content: &str) -> Self {
+    pub fn new(article_id: i64, content: &str, hashtags: &str, likes: i32, comments: i32) -> Self {
         Self {
             article_id,
             content: content.into(),
+            hashtags: hashtags.into(),
+            likes,
+            comments,
         }
     }
 
@@ -93,18 +99,39 @@ impl NewArticleDetail {
     pub fn get_content(&self) -> &str {
         &self.content
     }
+    pub fn get_hashtags(&self) -> &str {
+        &self.hashtags
+    }
+    pub fn get_likes(&self) -> i32 {
+        self.likes
+    }
+    pub fn get_comments(&self) -> i32 {
+        self.comments
+    }
 }
 
 pub struct NewArticleRelavance {
     article_id: i64,
     is_related: bool,
+    continent: Option<String>,
+    country: Option<String>,
+    city: Option<String>,
 }
 
 impl NewArticleRelavance {
-    pub fn new(article_id: i64, is_related: bool) -> Self {
+    pub fn new(
+        article_id: i64,
+        is_related: bool,
+        continent: Option<String>,
+        country: Option<String>,
+        city: Option<String>,
+    ) -> Self {
         Self {
             article_id,
             is_related,
+            continent,
+            country,
+            city,
         }
     }
 
@@ -113,5 +140,14 @@ impl NewArticleRelavance {
     }
     pub fn get_is_related(&self) -> bool {
         self.is_related
+    }
+    pub fn get_continent(&self) -> &Option<String> {
+        &self.continent
+    }
+    pub fn get_country(&self) -> &Option<String> {
+        &self.country
+    }
+    pub fn get_city(&self) -> &Option<String> {
+        &self.city
     }
 }
