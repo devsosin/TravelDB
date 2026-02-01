@@ -89,9 +89,12 @@ impl ArticleRepository for ArticleRepositoryImpl {
 
     async fn save_detail(&self, new_article_detail: NewArticleDetail) -> RepositoryResult<i64> {
         let record = sqlx::query!(
-            "INSERT INTO tb_article_detail(article_id, content) VALUES($1, $2) RETURNING id",
+            "INSERT INTO tb_article_detail(article_id, content, hashtags, likes, comments) VALUES($1, $2, $3, $4, $5) RETURNING id",
             new_article_detail.get_article_id(),
-            new_article_detail.get_content()
+            new_article_detail.get_content(),
+            new_article_detail.get_hashtags(),
+            new_article_detail.get_likes(),
+            new_article_detail.get_comments(),
         )
         .fetch_one(&self.pool)
         .await?;
@@ -142,7 +145,7 @@ impl ArticleRepository for ArticleRepositoryImpl {
                 LEFT JOIN tb_article_relavance AS r ON a.id = r.article_id
             WHERE r.id IS NULL
             ORDER BY writed_at ASC
-            LIMIT 20
+            LIMIT 1000
             "#
         )
         .fetch_all(&self.pool)
@@ -179,6 +182,8 @@ impl ArticleRepository for ArticleRepositoryImpl {
     }
 
     async fn find_detail_with_no_metadata(&self) -> RepositoryResult<Vec<ArticleDetailRecord>> {
+        // 저거랑 비슷하게 40개 뽑고 20개 group by 추리는 식으로?
+        // 지나간건 제외해야함...
         let articles = sqlx::query_as!(
             ArticleDetailRecord,
             r#"
