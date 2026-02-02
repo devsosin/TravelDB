@@ -163,7 +163,7 @@ impl ArticleRepository for ArticleRepositoryImpl {
                 FROM tb_article
                 WHERE writed_at >= (SELECT writed_at FROM tb_crawl_detail_checker)
                 ORDER BY writed_at ASC
-                LIMIT 40
+                LIMIT 100
             )
             SELECT MIN(a.id) AS id, a.article_id, MIN(writer) AS writer, MIN(writed_at) AS writed_at
             FROM TargetArticles AS a
