@@ -1,0 +1,50 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT a.id, title, article_id, writer, writed_at, k.query\n            FROM tb_article AS a\n                JOIN tb_keyword AS k ON a.keyword_id = k.id\n            WHERE has_detail=FALSE\n            ORDER BY id ASC \n            LIMIT 20\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "article_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "writer",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "writed_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "query",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "7481d66544893489697a43aaaed85ad66f98d22792e55fdc534910491259c711"
+}

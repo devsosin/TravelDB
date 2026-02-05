@@ -31,15 +31,19 @@ pub trait ArticleRepository: Send {
         &self,
         new_article_detail: NewArticleDetail,
     ) -> impl Future<Output = RepositoryResult<i64>>;
+    fn update_article(&self, article_id: i64) -> impl Future<Output = RepositoryResult<()>>;
 
     fn find_no_relavnce(&self)
     -> impl Future<Output = RepositoryResult<Vec<ArticleSummaryRecord>>>;
-    fn find_related_but_no_detail(
-        &self,
-    ) -> impl Future<Output = RepositoryResult<Vec<ArticleInfoRecord>>>;
     fn save_relavance(
         &self,
         new_article_relavance: NewArticleRelavance,
+    ) -> impl Future<Output = RepositoryResult<i64>>;
+    fn find_no_detail(&self) -> impl Future<Output = RepositoryResult<Vec<ArticleInfoRecord>>>;
+    fn save_quality(
+        &self,
+        article_id: i64,
+        quality: f32,
     ) -> impl Future<Output = RepositoryResult<i64>>;
     fn find_detail_with_no_metadata(
         &self,
@@ -136,6 +140,7 @@ impl ArticleRepository for ArticleRepositoryImpl {
         Ok(record.id)
     }
 
+    // do not using (quality check)
     async fn find_no_relavnce(&self) -> RepositoryResult<Vec<ArticleSummaryRecord>> {
         let articles = sqlx::query_as!(
             ArticleSummaryRecord,
@@ -154,24 +159,15 @@ impl ArticleRepository for ArticleRepositoryImpl {
         Ok(articles)
     }
 
-    async fn find_related_but_no_detail(&self) -> RepositoryResult<Vec<ArticleInfoRecord>> {
+    async fn find_no_detail(&self) -> RepositoryResult<Vec<ArticleInfoRecord>> {
         let articles = sqlx::query_as!(
             ArticleInfoRecord,
             r#"
-            WITH TargetArticles AS (
-                SELECT id, article_id, writer, writed_at
-                FROM tb_article
-                WHERE writed_at >= (SELECT writed_at FROM tb_crawl_detail_checker)
-                ORDER BY writed_at ASC
-                LIMIT 100
-            )
-            SELECT MIN(a.id) AS id, a.article_id, MIN(writer) AS writer, MIN(writed_at) AS writed_at
-            FROM TargetArticles AS a
-                JOIN tb_article_relavance AS r ON a.id = r.article_id AND r.is_related = TRUE
-                LEFT JOIN tb_article_detail AS d ON a.id = d.article_id
-            GROUP BY a.article_id
-            HAVING count(d.id) = 0
-            ORDER BY MIN(a.writed_at) ASC
+            SELECT a.id, title, article_id, writer, writed_at, k.query
+            FROM tb_article AS a
+                JOIN tb_keyword AS k ON a.keyword_id = k.id
+            WHERE has_detail=FALSE
+            ORDER BY id ASC 
             LIMIT 20
             "#
         )
@@ -180,10 +176,31 @@ impl ArticleRepository for ArticleRepositoryImpl {
 
         Ok(articles)
     }
+    async fn update_article(&self, article_id: i64) -> RepositoryResult<()> {
+        sqlx::query!(
+            "UPDATE tb_article SET has_detail=TRUE WHERE id=$1",
+            article_id,
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+
+    async fn save_quality(&self, article_id: i64, quality: f32) -> RepositoryResult<i64> {
+        let record = sqlx::query!(
+            "INSERT INTO tb_article_quality(article_id, quality) VALUES($1, $2) RETURNING id",
+            article_id,
+            quality,
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(record.id)
+    }
 
     async fn find_detail_with_no_metadata(&self) -> RepositoryResult<Vec<ArticleDetailRecord>> {
-        // 저거랑 비슷하게 40개 뽑고 20개 group by 추리는 식으로?
-        // 지나간건 제외해야함...
+        // after quality check
         let articles = sqlx::query_as!(
             ArticleDetailRecord,
             r#"
