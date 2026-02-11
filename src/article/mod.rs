@@ -209,7 +209,7 @@ impl ArticleRepository for ArticleRepositoryImpl {
                 ) AS target
                     LEFT JOIN tb_metadata AS m ON target.id = m.article_id
                 WHERE m.article_id IS NULL 
-                LIMIT 10
+                LIMIT 1000
             )
             SELECT 
                 target_ids.id, a.title, d.content

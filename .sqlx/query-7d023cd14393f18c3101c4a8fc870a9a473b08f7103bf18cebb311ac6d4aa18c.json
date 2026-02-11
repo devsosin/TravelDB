@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            WITH target_ids AS (\n                SELECT target.id\n                FROM (\n                    SELECT ranked.id\n                    FROM (\n                        SELECT \n                            id, \n                            PERCENT_RANK() OVER (PARTITION BY keyword_id ORDER BY quality DESC) as p_rank\n                        FROM tb_article\n                        WHERE quality IS NOT NULL -- Partial Index 활용\n                    ) AS ranked\n                    WHERE p_rank <= 0.1\n                ) AS target\n                    LEFT JOIN tb_metadata AS m ON target.id = m.article_id\n                WHERE m.article_id IS NULL \n                LIMIT 1000\n            )\n            SELECT \n                target_ids.id, a.title, d.content\n            FROM tb_article_detail AS d\n                JOIN target_ids ON target_ids.id = d.article_id\n                JOIN tb_article AS a ON target_ids.id = a.id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "content",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "7d023cd14393f18c3101c4a8fc870a9a473b08f7103bf18cebb311ac6d4aa18c"
+}
