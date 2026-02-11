@@ -31,7 +31,11 @@ pub trait ArticleRepository: Send {
         &self,
         new_article_detail: NewArticleDetail,
     ) -> impl Future<Output = RepositoryResult<i64>>;
-    fn update_article(&self, article_id: i64) -> impl Future<Output = RepositoryResult<()>>;
+    fn update_article(
+        &self,
+        article_id: i64,
+        quality: f32,
+    ) -> impl Future<Output = RepositoryResult<()>>;
 
     fn find_no_relavnce(&self)
     -> impl Future<Output = RepositoryResult<Vec<ArticleSummaryRecord>>>;
@@ -40,14 +44,7 @@ pub trait ArticleRepository: Send {
         new_article_relavance: NewArticleRelavance,
     ) -> impl Future<Output = RepositoryResult<i64>>;
     fn find_no_detail(&self) -> impl Future<Output = RepositoryResult<Vec<ArticleInfoRecord>>>;
-    fn save_quality(
-        &self,
-        article_id: i64,
-        quality: f32,
-    ) -> impl Future<Output = RepositoryResult<i64>>;
-    fn find_detail_with_no_metadata(
-        &self,
-    ) -> impl Future<Output = RepositoryResult<Vec<ArticleDetailRecord>>>;
+    fn find_no_metadata(&self) -> impl Future<Output = RepositoryResult<Vec<ArticleDetailRecord>>>;
 }
 
 impl ArticleRepository for ArticleRepositoryImpl {
@@ -176,10 +173,12 @@ impl ArticleRepository for ArticleRepositoryImpl {
 
         Ok(articles)
     }
-    async fn update_article(&self, article_id: i64) -> RepositoryResult<()> {
+
+    async fn update_article(&self, article_id: i64, quality: f32) -> RepositoryResult<()> {
         sqlx::query!(
-            "UPDATE tb_article SET has_detail=TRUE WHERE id=$1",
+            "UPDATE tb_article SET has_detail=TRUE, quality=$2 WHERE id=$1",
             article_id,
+            quality,
         )
         .execute(&self.pool)
         .await?;
@@ -187,32 +186,36 @@ impl ArticleRepository for ArticleRepositoryImpl {
         Ok(())
     }
 
-    async fn save_quality(&self, article_id: i64, quality: f32) -> RepositoryResult<i64> {
-        let record = sqlx::query!(
-            "INSERT INTO tb_article_quality(article_id, quality) VALUES($1, $2) RETURNING id",
-            article_id,
-            quality,
-        )
-        .fetch_one(&self.pool)
-        .await?;
-
-        Ok(record.id)
-    }
-
-    async fn find_detail_with_no_metadata(&self) -> RepositoryResult<Vec<ArticleDetailRecord>> {
-        // after quality check
+    async fn find_no_metadata(&self) -> RepositoryResult<Vec<ArticleDetailRecord>> {
+        // 1. 상위 10%의 품질 블로그 포스팅 확인
+        // 2. metadata가 있으면 제외, 1000건 제약 -> 여기까지 id만 조회
+        // 3. article, article_detail JOIN (article_id에 INDEX 설정 -> 하지않으면 article_detail 풀스캔)
+        // -> id, title, content 조회
         let articles = sqlx::query_as!(
             ArticleDetailRecord,
             r#"
-            SELECT a.id, a.title, d.content
-            FROM (
-                SELECT d.article_id, d.content
-                FROM tb_article_detail AS d
-                    LEFT JOIN tb_metadata AS m ON d.article_id = m.article_id
-                WHERE m.id IS NULL
-                LIMIT 20
-            ) AS d
-                JOIN tb_article AS a ON a.id = d.article_id
+            WITH target_ids AS (
+                SELECT target.id
+                FROM (
+                    SELECT ranked.id
+                    FROM (
+                        SELECT 
+                            id, 
+                            PERCENT_RANK() OVER (PARTITION BY keyword_id ORDER BY quality DESC) as p_rank
+                        FROM tb_article
+                        WHERE quality IS NOT NULL -- Partial Index 활용
+                    ) AS ranked
+                    WHERE p_rank <= 0.1
+                ) AS target
+                    LEFT JOIN tb_metadata AS m ON target.id = m.article_id
+                WHERE m.article_id IS NULL 
+                LIMIT 10
+            )
+            SELECT 
+                target_ids.id, a.title, d.content
+            FROM tb_article_detail AS d
+                JOIN target_ids ON target_ids.id = d.article_id
+                JOIN tb_article AS a ON target_ids.id = a.id
             "#
         )
         .fetch_all(&self.pool)

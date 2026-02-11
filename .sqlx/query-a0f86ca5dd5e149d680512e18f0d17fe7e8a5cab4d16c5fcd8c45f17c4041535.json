@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE tb_article SET has_detail=TRUE, quality=$2 WHERE id=$1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Float4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a0f86ca5dd5e149d680512e18f0d17fe7e8a5cab4d16c5fcd8c45f17c4041535"
+}
