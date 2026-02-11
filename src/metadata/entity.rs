@@ -4,6 +4,9 @@ pub struct Metadata {
     pub title: String,
 
     pub continent: Option<String>,
+    pub country: Option<String>,
+    pub city: Option<String>,
+
     pub country_id: Option<i16>,
     pub city_id: Option<i16>,
 

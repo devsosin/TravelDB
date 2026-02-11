@@ -1,5 +1,8 @@
 pub struct NewMetadata {
     pub post_type: String,
+    pub continent: Option<String>,
+    pub country: Option<String>,
+    pub city: Option<String>,
     pub companion: Option<String>,
     pub duration: Option<String>,
     pub budget_level: Option<String>,
@@ -12,6 +15,9 @@ pub struct NewMetadata {
 impl NewMetadata {
     pub fn new(
         post_type: &str,
+        continent: Option<String>,
+        country: Option<String>,
+        city: Option<String>,
         companion: Option<String>,
         duration: Option<String>,
         budget_level: Option<String>,
@@ -22,6 +28,9 @@ impl NewMetadata {
     ) -> Self {
         Self {
             post_type: post_type.into(),
+            continent,
+            country,
+            city,
             companion,
             duration,
             budget_level,
