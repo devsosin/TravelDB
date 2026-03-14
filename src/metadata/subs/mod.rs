@@ -2,7 +2,6 @@ use crate::{
     RepositoryResult,
     metadata::{
         MetaRepositoryImpl,
-        entity::MentionedPlace,
         model::{NewMentionedPlace, NewTheme},
     },
 };
@@ -28,7 +27,7 @@ impl MetaMentionedPlaceRepository for MetaRepositoryImpl {
         let categories = new_places
             .iter()
             .map(|p| p.category.clone())
-            .collect::<Vec<String>>();
+            .collect::<Vec<Option<String>>>();
         let reviews = new_places
             .iter()
             .map(|p| p.review_context.clone())
@@ -54,7 +53,7 @@ impl MetaMentionedPlaceRepository for MetaRepositoryImpl {
             "#,
             meta_id,
             &names,
-            &categories,
+            categories as _,
             reviews as _,
         )
         .fetch_all(&self.pool)

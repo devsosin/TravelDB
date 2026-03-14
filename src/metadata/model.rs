@@ -57,15 +57,15 @@ impl NewTheme {
 
 pub struct NewMentionedPlace {
     pub name: String,
-    pub category: String,
+    pub category: Option<String>,
     pub review_context: Option<String>,
 }
 
 impl NewMentionedPlace {
-    pub fn new(name: &str, category: &str, review_context: Option<String>) -> Self {
+    pub fn new(name: &str, category: Option<String>, review_context: Option<String>) -> Self {
         Self {
             name: name.into(),
-            category: category.into(),
+            category,
             review_context,
         }
     }
